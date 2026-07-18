@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobil Fiyat Sınıflandırıcı · PyTorch & FastAPI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-content">
+        <div class="badge-container">
+          <span class="badge py-badge">PyTorch</span>
+          <span class="badge fast-badge">FastAPI</span>
+        </div>
+        <h1>Mobil Fiyat Sınıflandırıcı</h1>
+        <p class="subtitle">
+          Yapay zeka modelimiz ile telefon özelliklerine göre fiyat aralığını tahmin edin.
+          Sol taraftan özellikleri girin veya hazır şablonları deneyin.
+        </p>
+      </div>
+    </header>
+
+    <!-- Preset Butonları -->
+    <div class="presets-section">
+      <span class="presets-label">⚡ Hızlı Telefon Şablonları:</span>
+      <div class="preset-buttons">
+        {% for key, preset in presets.items() %}
+        <button type="button" class="btn-preset" data-preset="{{ key }}">
+          <span class="preset-icon">{{ preset.icon }}</span>
+          <span class="preset-text">{{ preset.label }}</span>
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <main class="layout">
+      <!-- Giriş Formu Kartı -->
+      <section class="card form-card">
+        <!-- Sekme Butonları -->
+        <div class="tabs-nav">
+          {% for cat_id, cat in categories.items() %}
+          <button type="button" class="tab-btn {% if loop.first %}active{% endif %}" data-tab="{{ cat_id }}">
+            <span class="tab-icon">{{ cat.icon }}</span>
+            <span class="tab-label">{{ cat.label }}</span>
+          </button>
+          {% endfor %}
+        </div>
+
+        <form id="predict-form" novalidate>
+          <div class="tab-content">
+            {% for cat_id, cat in categories.items() %}
+            <div class="tab-panel {% if loop.first %}active{% endif %}" id="panel-{{ cat_id }}">
+              <div class="form-grid">
+                {% for name in feature_columns %}
+                {% set meta = feature_meta[name] %}
+                {% if meta.category == cat_id %}
+                
+                <div class="field {% if meta.get('type') == 'checkbox' %}field-checkbox{% endif %}">
+                  {% if meta.get('type') == 'checkbox' %}
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="{{ name }}" name="{{ name }}" value="1">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-text">
+                      <span class="field-icon">{{ meta.icon }}</span>
+                      {{ meta.label }}
+                    </span>
+                  </label>
+                  
+                  {% else %}
+                  <div class="field-header">
+                    <label for="{{ name }}">
+                      <span class="field-icon">{{ meta.icon }}</span>
+                      {{ meta.label }}
+                    </label>
+                    <span class="field-value-display" id="val-{{ name }}">0</span>
+                  </div>
+                  
+                  <div class="range-control-group">
+                    <input
+                      type="range"
+                      class="range-slider"
+                      id="slider-{{ name }}"
+                      min="{{ meta.min }}"
+                      max="{{ meta.max }}"
+                      step="{{ meta.step }}"
+                    >
+                    <input
+                      type="number"
+                      class="number-input"
+                      id="{{ name }}"
+                      name="{{ name }}"
+                      min="{{ meta.min }}"
+                      max="{{ meta.max }}"
+                      step="{{ meta.step }}"
+                      required
+                    >
+                  </div>
+                  <div class="range-bounds">
+                    <span>{{ meta.min }}</span>
+                    <span>{{ meta.max }}</span>
+                  </div>
+                  {% endif %}
+                </div>
+                
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="reset-btn" class="btn btn-secondary">
+              🔄 Formu Sıfırla
+            </button>
+            <button type="submit" id="submit-btn" class="btn btn-primary">
+              <span class="btn-text">Fiyat Tahmin Et 🚀</span>
+              <span class="btn-loader" hidden></span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Tahmin Sonucu Kartı -->
+      <section class="card result-card" id="result-card" hidden>
+        <div class="card-header">
+          <h2>Tahmin Sonucu</h2>
+          <p>Yapay zeka modelinin tahmin ettiği fiyat sınıfı ve olasılıkları.</p>
+        </div>
+
+        <div class="result-display-wrapper">
+          <div class="result-badge-glow" id="result-badge-glow"></div>
+          <div class="result-main">
+            <div class="result-badge" id="result-badge">—</div>
+            <h3 class="result-label" id="result-label">Tahmin Yapılmadı</h3>
+            <p class="result-desc" id="result-desc">Lütfen sol taraftaki özellikleri doldurup "Fiyat Tahmin Et" butonuna tıklayın.</p>
+          </div>
+        </div>
+
+        <div class="probability-section">
+          <h4>Sınıf Olasılık Dağılımları</h4>
+          <div class="probability-list" id="probability-list">
+            <!-- Dinamik Olarak JavaScript ile Doldurulacak -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Mobil Fiyat Sınıflandırma Portalı · PyTorch MLP Sınıflandırıcı Model</p>
+      <div class="footer-legend">
+        <span style="color: #10b981">● Düşük Maliyet</span>
+        <span style="color: #f59e0b">● Orta Maliyet</span>
+        <span style="color: #f97316">● Yüksek Maliyet</span>
+        <span style="color: #ef4444">● Çok Yüksek Maliyet</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
