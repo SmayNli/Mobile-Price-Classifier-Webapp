@@ -56,6 +56,7 @@ class NonlinearModel(nn.Module):
 
     def forward(self, x):
         return self.layer_batch(x)
+```
 Training Strategy & Metrics
 Preprocessing: Feature scaling via StandardScaler.
 
@@ -64,7 +65,6 @@ Loss Function: CrossEntropyLoss()
 Optimizer: Adam (Learning Rate: 0.001)
 
 Evaluation Metric: MulticlassAccuracy via torchmetrics
-
 Epochs: 200
 
 📈 Performance Results
