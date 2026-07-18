@@ -57,7 +57,7 @@ class NonlinearModel(nn.Module):
     def forward(self, x):
         return self.layer_batch(x)
 ```
-Training Strategy & Metrics
+## Training Strategy & Metrics
 Preprocessing: Feature scaling via StandardScaler.
 
 Loss Function: CrossEntropyLoss()
@@ -67,7 +67,7 @@ Optimizer: Adam (Learning Rate: 0.001)
 Evaluation Metric: MulticlassAccuracy via torchmetrics
 Epochs: 200
 
-📈 Performance Results
+## 📈 Performance Results
 The model shows stable learning curves, achieving high convergence efficiency:
 
 Final Training Loss: 0.2851
@@ -76,7 +76,7 @@ Final Training Accuracy: ~89.4%
 
 Final Test Accuracy: 94.22% 🎯
 
-🛠️ Tech Stack
+## 🛠️ Tech Stack
 Deep Learning Framework: PyTorch (torch, torch.nn)
 
 Data Engineering: Pandas, NumPy, Scikit-Learn
@@ -87,7 +87,7 @@ Backend API & Web UI: FastAPI
 
 Visualization: Matplotlib, Seaborn
 
-⚙️ Installation & Setup
+## ⚙️ Installation & Setup
 Clone the repository:
 git clone [https://github.com/YOUR_USERNAME/Mobile-Price-Classification-PyTorch.git](https://github.com/YOUR_USERNAME/Mobile-Price-Classification-PyTorch.git)
 cd Mobile-Price-Classification-PyTorch
